@@ -248,7 +248,8 @@ describe('Http.Api.Lookup', function () {
                     .expect('Content-Type', /^application\/json/)
                     .expect(200)
                     .expect(function () {
-                        expect(waterline.lookups.updateOneById).to.have.been.calledWith('123', sinon.match(data[0]));
+                        expect(waterline.lookups.updateOneById)
+                            .to.have.been.calledWith('123', sinon.match(data[0]));
                     });
             });
         });
