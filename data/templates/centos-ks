@@ -174,6 +174,27 @@ chmod +x /etc/rc.d/init.d/<%=rackhdCallbackScript%>
 # Enable the above service, it should auto-disable after running once
 chkconfig <%=rackhdCallbackScript%> on
 
+putLokup() {
+  version=$1
+  dev=$2
+  ip=$3
+  node=$4
+  mac=`ifconfig ${dev} | grep "ether" | awk '{print $2}'`
+  if [ ${version:0:1} == "6" ]; then
+    mac=`ifconfig ${dev} | grep "HWaddr" | awk '{print $5}'`
+    echo ${mac}
+  fi
+  curl -X PUT -H "Content-Type: application/json" -d '{"ipAddress":"'"${ip}"'","macAddress":"'"${mac}"'","node":"'"${node}"'"}' http://127.0.0.1:8080/api/common/loo#
+}
+
+<% if( undefined !== networkDevices ) { %>
+  <% networkDevices.forEach(function(n) { %>
+    <% if( undefined != n.ipv4 ) { %>
+putLookup "<%=version%>" "<%=n.device%>" "<%=n.ipv4.ipAddr%>" "<%=task.nodeId%>"
+    <% } %>
+  <% } %>
+<% } %>
+
 #signify ORA the installation completed
 /usr/bin/wget --spider http://<%=server%>:<%=port%>/api/common/templates/renasar-ansible.pub
 
