@@ -47,7 +47,7 @@ postLookup () {
   BODY=$BODY"}"
   BODYLEN=$(echo -n ${BODY} | wc -c )
   echo ${BODY} >> /vmfs/volumes/datastore1/firstboot.log
-  echo -ne "POST /api/1.1/lookups HTTP/1.0\r\nHost: $2\r\nContent-Type: application/json\r\nContent-Length: ${BODYLEN}\r\n\r\n${BODY}" | nc -i 3 <%=server%> <%=port%>
+  echo -ne "PUT /api/1.1/lookups HTTP/1.0\r\nHost: $2\r\nContent-Type: application/json\r\nContent-Length: ${BODYLEN}\r\n\r\n${BODY}" | nc -i 3 <%=server%> <%=port%>
 }
 
 # enable VHV (Virtual Hardware Virtualization to run nested 64bit Guests + Hyper-V VM)
