@@ -112,7 +112,7 @@ describe('Http.Api.Workflows', function () {
 
     describe('PUT /workflows/tasks', function () {
         it('should persist a task', function () {
-            var task = { name: 'foobar' };
+            var task = { injectableName: 'foobar' };
             workflowApiService.defineTask.resolves(task);
 
             return helper.request().put('/api/1.1/workflows/tasks')
@@ -124,7 +124,7 @@ describe('Http.Api.Workflows', function () {
 
     describe('GET /workflows/tasks/library', function () {
         it('should retrieve the task library', function () {
-            var task = { name: 'foobar' };
+            var task = { injectableName: 'foobar' };
             workflowApiService.getTaskDefinitions.resolves([task]);
 
             return helper.request().get('/api/1.1/workflows/tasks/library')
@@ -133,28 +133,69 @@ describe('Http.Api.Workflows', function () {
         });
     });
 
-    describe('GET /workflows/library/*', function () {
-        it('should retrieve the graph library', function () {
-            var graph = { name: 'foobar' };
-            workflowApiService.getGraphDefinitions.resolves([graph]);
+    describe('GET /workflows/tasks/library/:id', function () {
+        it('should retrieve a task from the task library', function () {
+            var task = { injectableName: 'foobar' };
+            workflowApiService.getTaskDefinitions.withArgs('foobar').resolves([task]);
 
-            return helper.request().get('/api/1.1/workflows/library/*')
+            return helper.request().get('/api/1.1/workflows/tasks/library/foobar')
             .expect('Content-Type', /^application\/json/)
-            .expect(200, [graph]);
+            .expect(200, task)
+            .expect(function () {
+                expect(workflowApiService.getTaskDefinitions).to.have.been.calledOnce;
+                expect(workflowApiService.getTaskDefinitions).to.have.been.calledWith('foobar');
+            });
+        });
+
+        it('should get NotFoundError if task definition is not existing', function () {
+            workflowApiService.getTaskDefinitions.withArgs('foobar').resolves([]);
+
+            return helper.request().get('/api/1.1/workflows/tasks/library/foobar')
+            .expect('Content-Type', /^application\/json/)
+            .expect(404)
+            .expect(function () {
+                expect(workflowApiService.getTaskDefinitions).to.have.been.calledOnce;
+                expect(workflowApiService.getTaskDefinitions).to.have.been.calledWith('foobar');
+            });
+        });
+    });
+
+    describe('GET /workflows/library', function () {
+        it('should retrieve the graph library', function () {
+            var graph1 = { injectableName: 'foo' };
+            var graph2 = { injectableName: 'bar' };
+            workflowApiService.getGraphDefinitions.resolves([graph1, graph2]);
+
+            return helper.request().get('/api/1.1/workflows/library')
+            .expect('Content-Type', /^application\/json/)
+            .expect(200, [graph1, graph2]);
         });
     });
 
     describe('GET /workflows/library/:id', function () {
         it('should retrieve a graph from the graph library', function () {
-            var graph = { friendlyName: 'foobar' };
-            workflowApiService.getGraphDefinitions.resolves([graph]);
+            var graph = { injectableName: 'foobar' };
+            workflowApiService.getGraphDefinitions.withArgs('foobar').resolves([graph]);
 
-            return helper.request().get('/api/1.1/workflows/library/1234')
+            return helper.request().get('/api/1.1/workflows/library/foobar')
             .expect('Content-Type', /^application\/json/)
             .expect(200, graph)
             .expect(function () {
                 expect(workflowApiService.getGraphDefinitions).to.have.been.calledOnce;
-                expect(workflowApiService.getGraphDefinitions).to.have.been.calledWith('1234');
+                expect(workflowApiService.getGraphDefinitions).to.have.been.calledWith('foobar');
+            });
+        });
+
+        it('should return 404 if graph definition is not existing', function () {
+            var graph = { injectableName: 'foobar' };
+            workflowApiService.getGraphDefinitions.withArgs('foobar').resolves([]);
+
+            return helper.request().get('/api/1.1/workflows/library/foobar')
+            .expect('Content-Type', /^application\/json/)
+            .expect(404)
+            .expect(function () {
+                expect(workflowApiService.getGraphDefinitions).to.have.been.calledOnce;
+                expect(workflowApiService.getGraphDefinitions).to.have.been.calledWith('foobar');
             });
         });
     });
