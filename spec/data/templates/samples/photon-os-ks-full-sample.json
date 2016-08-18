@@ -48,6 +48,6 @@
         "# Enable SSH root login",
         "sed -i 's/PermitRootLogin no/PermitRootLogin yes/g' /etc/ssh/sshd_config",
         "# Signify ORA the installation completed",
-        "curl -X POST -H 'Content-Type:application/json' 'http://172.31.128.1:8080/api/current/notification?taskId=testTaskIdentifier&data=finished'"
+        "curl -X POST -H 'Content-Type:application/json' 'http://172.31.128.1:8080/api/current/notification?nodeId=testNodeIdentifier'"
     ]
 }

@@ -84,7 +84,5 @@
     "server": "172.31.128.1",
     "port": "8080",
     "rackhdCallbackScript": "esx-rackhdcallback.sh",
-    "task": {
-        "nodeId": "testNodeId"
-    }
+    "nodeId": "testNodeId"
 }

@@ -105,5 +105,5 @@
     "server": "172.31.128.1",
     "port": "8080",
     "rackhdCallbackScript": "photon-os.rackhdcallback",
-    "taskid": "testTaskIdentifier"
+    "nodeId": "testNodeIdentifier"
 }

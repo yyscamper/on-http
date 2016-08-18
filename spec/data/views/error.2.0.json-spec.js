@@ -8,10 +8,16 @@ describe(templateName, function() {
     var context = {
         message: 'test error message',
         status: '404',
+        uuid: '123456',
         stack: [ 'first', 'second', 'third' ]
     };
 
-    var expectResult = _.cloneDeep(context);
+    var expectResult = {
+        message: 'test error message',
+        status: '404',
+        UUID: '123456',
+        stack: [ 'first', 'second', 'third' ]
+    };
 
     it('should succeed to render', function() {
         helper.startTemplateTest(subject)
