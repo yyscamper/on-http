@@ -1,6 +1,6 @@
 {
   "id" : "<%=id%>",
-  <% if (node !== null) { %>
+  <% if (typeof node !== 'undefined' && node !== null) { %>
   "node": "<%=basepath%>/nodes/<%=node%>",
   <% } %>
   "service": "<%= service %>",

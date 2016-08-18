@@ -1,0 +1,10 @@
+iseq ${platform} efi && goto is_efi || goto not_efi
+
+:not_efi
+kernel http://172.31.128.1:9080/esxi/6.0/mboot.c32 -c http://172.31.128.1:9080/api/current/templates/esx-boot-cfg BOOTIF=01-${netX/mac}
+boot
+
+:is_efi
+kernel http://172.31.128.1:9080/esxi/6.0/efi/boot/bootx64.efi -c http://172.31.128.1:9080/api/current/templates/esx-boot-cfg
+boot
+

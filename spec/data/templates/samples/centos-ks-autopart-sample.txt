@@ -1,0 +1,183 @@
+install
+#text
+graphical
+unsupported_hardware
+url --url=http://172.31.128.1:9080/centos/7/os/x86_64
+# eula --agreed
+lang en_US.UTF-8
+keyboard 'us'
+timezone America/Los_Angeles --isUtc
+firewall --enabled --http --ssh
+selinux --permissive
+bootloader --location=mbr --driveorder=/dev/sda --boot-drive=/dev/sda --append="crashkernel=auth rhgb"
+services --enabled=NetworkManager,sshd
+network --device=11:22:33:44:55:66 --noipv6 --activate
+
+#enable syslog
+logging --host=172.31.128.1 --level=info
+authconfig --enableshadow --passalgo=sha512 --enablefingerprint
+
+#Set the root account
+rootpw --iscrypted ****Root***
+
+#create all users
+user --name=rackhd1 --uid=1010 --iscrypted --password ******rackhd1*****
+user --name=rackhd2  --iscrypted --password *****rackhd2*****
+
+# Disk Partitioning
+zerombr
+clearpart --all --drives=/dev/sda
+
+# auto partitioning if no partitions are specified
+autopart
+# END of Disk Partitioning
+
+# Make sure we reboot into the new system when we are finished
+reboot
+
+# Package Selection
+%packages --nobase --excludedocs
+@core
+-*firmware
+-iscsi*
+-fcoe*
+-b43-openfwwf
+kernel-firmware
+wget
+sudo
+perl
+libselinux-python
+net-tools
+@virtualization-hypervisor
+@virtualization-client
+@virtualization-platform
+@virtualization-tools
+%end
+%pre
+%end
+%post --log=/root/install-post.log
+(
+# PLACE YOUR POST DIRECTIVES HERE
+PATH=/bin:/sbin:/usr/bin:/usr/sbin
+export PATH
+
+# copying of SSH key
+mkdir /root/.ssh
+echo ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDJQ631/sw3D40h/6JfA+PFVy5Ofz6eu7caxbv0zdw4fTJsrFcOliHZTEtAvqx7Oa8gqSC6d7v61M0croQxtt1DGUcH2G4yhfdZOlK4pr5McwtX0T/APACdAr1HtP7Bt7u43mgHpUG4bHGc+NoY7cWCISkxl4apkYWbvcoJy/5bQn0uRgLuHUNXxK/XuLT5vG76xxY+1xRa5+OIoJ6l78nglNGrj2V+jH3+9yZxI43S9I3NOCl4BvX5Cp3CFMHyt80gk2yM1BJpQZZ4GHewkI/XOIFPU3rR5+toEYXHz7kzykZsqt1PtbaTwG3TX9GJI4C7aWyH9H+9Bt76vH/xyzmn rackhd@rackhd-demo > /root/.ssh/authorized_keys
+chown -R root:root /root/.ssh
+mkdir /home/rackhd1/.ssh
+echo ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDJQ631/sw3D40h/6JfA+PFVy5Ofz6eu7caxbv0zdw4fTJsrFcOliHZTEtAvqx7Oa8gqSC6d7v61M0croQxtt1DGUcH2G4yhfdZOlK4pr5McwtX0T/APACdAr1HtP7Bt7u43mgHpUG4bHGc+NoY7cWCISkxl4apkYWbvcoJy/5bQn0uRgLuHUNXxK/XuLT5vG76xxY+1xRa5+OIoJ6l78nglNGrj2V+jH3+9yZxI43S9I3NOCl4BvX5Cp3CFMHyt80gk2yM1BJpQZZ4GHewkI/XOIFPU3rR5+toEYXHz7kzykZsqt1PtbaTwG3TX9GJI4C7aWyH9H+9Bt76vH/pLBIn rackhd@rackhd-demo > /home/rackhd1/.ssh/authorized_keys
+chown -R rackhd1:rackhd1 /home/rackhd1/.ssh
+
+#set hostname
+echo rackhd-node > /etc/hostname
+echo -e "NETWORKING=yes\nHOSTNAME=rackhd-node.example.com" > /etc/sysconfig/network
+
+# Setup static network configuration
+echo "Configuring vlan 104 on ens802f0"
+sed -i '/^BOOTPROTO=/d' /etc/sysconfig/network-scripts/ifcfg-ens802f0.104
+sed -i '/^ONBOOT=/d' /etc/sysconfig/network-scripts/ifcfg-ens802f0.104
+echo "DEVICE=ens802f0.104" >> /etc/sysconfig/network-scripts/ifcfg-ens802f0.104
+echo "BOOTPROTO=none" >> /etc/sysconfig/network-scripts/ifcfg-ens802f0.104
+echo "ONBOOT=yes" >> /etc/sysconfig/network-scripts/ifcfg-ens802f0.104
+echo "IPADDR=192.168.1.29" >> /etc/sysconfig/network-scripts/ifcfg-ens802f0.104
+echo "NETMASK=255.255.255.0" >> /etc/sysconfig/network-scripts/ifcfg-ens802f0.104
+echo "GATEWAY=192.168.1.1" >> /etc/sysconfig/network-scripts/ifcfg-ens802f0.104
+echo "VLAN=yes" >> /etc/sysconfig/network-scripts/ifcfg-ens802f0.104
+
+echo "Configuring vlan 105 on ens802f0"
+sed -i '/^BOOTPROTO=/d' /etc/sysconfig/network-scripts/ifcfg-ens802f0.105
+sed -i '/^ONBOOT=/d' /etc/sysconfig/network-scripts/ifcfg-ens802f0.105
+echo "DEVICE=ens802f0.105" >> /etc/sysconfig/network-scripts/ifcfg-ens802f0.105
+echo "BOOTPROTO=none" >> /etc/sysconfig/network-scripts/ifcfg-ens802f0.105
+echo "ONBOOT=yes" >> /etc/sysconfig/network-scripts/ifcfg-ens802f0.105
+echo "IPADDR=192.168.1.29" >> /etc/sysconfig/network-scripts/ifcfg-ens802f0.105
+echo "NETMASK=255.255.255.0" >> /etc/sysconfig/network-scripts/ifcfg-ens802f0.105
+echo "GATEWAY=192.168.1.1" >> /etc/sysconfig/network-scripts/ifcfg-ens802f0.105
+echo "VLAN=yes" >> /etc/sysconfig/network-scripts/ifcfg-ens802f0.105
+
+echo "Configuring vlan 101 on ens802f0"
+sed -i '/^BOOTPROTO=/d' /etc/sysconfig/network-scripts/ifcfg-ens802f0.101
+sed -i '/^ONBOOT=/d' /etc/sysconfig/network-scripts/ifcfg-ens802f0.101
+echo "DEVICE=ens802f0.101" >> /etc/sysconfig/network-scripts/ifcfg-ens802f0.101
+echo "BOOTPROTO=none" >> /etc/sysconfig/network-scripts/ifcfg-ens802f0.101
+echo "ONBOOT=yes" >> /etc/sysconfig/network-scripts/ifcfg-ens802f0.101
+echo "IPV6INIT=yes" >> /etc/sysconfig/network-scripts/ifcfg-ens802f0.101
+echo "IPV6ADDR=fec0::6ab4:0:5efe:157.60.14.21" >> /etc/sysconfig/network-scripts/ifcfg-ens802f0.101
+echo "IPV6_DEFAULTGW=fe80::5efe:131.107.25.1" >> /etc/sysconfig/network-scripts/ifcfg-ens802f0.101
+echo "VLAN=yes" >> /etc/sysconfig/network-scripts/ifcfg-ens802f0.101
+
+echo "Configuring vlan 106 on ens802f0"
+sed -i '/^BOOTPROTO=/d' /etc/sysconfig/network-scripts/ifcfg-ens802f0.106
+sed -i '/^ONBOOT=/d' /etc/sysconfig/network-scripts/ifcfg-ens802f0.106
+echo "DEVICE=ens802f0.106" >> /etc/sysconfig/network-scripts/ifcfg-ens802f0.106
+echo "BOOTPROTO=none" >> /etc/sysconfig/network-scripts/ifcfg-ens802f0.106
+echo "ONBOOT=yes" >> /etc/sysconfig/network-scripts/ifcfg-ens802f0.106
+echo "IPV6INIT=yes" >> /etc/sysconfig/network-scripts/ifcfg-ens802f0.106
+echo "IPV6ADDR=fec0::6ab4:0:5efe:157.60.14.21" >> /etc/sysconfig/network-scripts/ifcfg-ens802f0.106
+echo "IPV6_DEFAULTGW=fe80::5efe:131.107.25.1" >> /etc/sysconfig/network-scripts/ifcfg-ens802f0.106
+echo "VLAN=yes" >> /etc/sysconfig/network-scripts/ifcfg-ens802f0.106
+
+echo "Configuring vlan 105 on ens802f1"
+sed -i '/^BOOTPROTO=/d' /etc/sysconfig/network-scripts/ifcfg-ens802f1.105
+sed -i '/^ONBOOT=/d' /etc/sysconfig/network-scripts/ifcfg-ens802f1.105
+echo "DEVICE=ens802f1.105" >> /etc/sysconfig/network-scripts/ifcfg-ens802f1.105
+echo "BOOTPROTO=none" >> /etc/sysconfig/network-scripts/ifcfg-ens802f1.105
+echo "ONBOOT=yes" >> /etc/sysconfig/network-scripts/ifcfg-ens802f1.105
+echo "IPADDR=192.168.11.89" >> /etc/sysconfig/network-scripts/ifcfg-ens802f1.105
+echo "NETMASK=255.255.255.0" >> /etc/sysconfig/network-scripts/ifcfg-ens802f1.105
+echo "GATEWAY=192.168.11.1" >> /etc/sysconfig/network-scripts/ifcfg-ens802f1.105
+echo "VLAN=yes" >> /etc/sysconfig/network-scripts/ifcfg-ens802f1.105
+
+echo "Configuring vlan 109 on ens802f1"
+sed -i '/^BOOTPROTO=/d' /etc/sysconfig/network-scripts/ifcfg-ens802f1.109
+sed -i '/^ONBOOT=/d' /etc/sysconfig/network-scripts/ifcfg-ens802f1.109
+echo "DEVICE=ens802f1.109" >> /etc/sysconfig/network-scripts/ifcfg-ens802f1.109
+echo "BOOTPROTO=none" >> /etc/sysconfig/network-scripts/ifcfg-ens802f1.109
+echo "ONBOOT=yes" >> /etc/sysconfig/network-scripts/ifcfg-ens802f1.109
+echo "IPADDR=192.168.11.89" >> /etc/sysconfig/network-scripts/ifcfg-ens802f1.109
+echo "NETMASK=255.255.255.0" >> /etc/sysconfig/network-scripts/ifcfg-ens802f1.109
+echo "GATEWAY=192.168.11.1" >> /etc/sysconfig/network-scripts/ifcfg-ens802f1.109
+echo "VLAN=yes" >> /etc/sysconfig/network-scripts/ifcfg-ens802f1.109
+
+echo "Configuring vlan 106 on ens802f1"
+sed -i '/^BOOTPROTO=/d' /etc/sysconfig/network-scripts/ifcfg-ens802f1.106
+sed -i '/^ONBOOT=/d' /etc/sysconfig/network-scripts/ifcfg-ens802f1.106
+echo "DEVICE=ens802f1.106" >> /etc/sysconfig/network-scripts/ifcfg-ens802f1.106
+echo "BOOTPROTO=none" >> /etc/sysconfig/network-scripts/ifcfg-ens802f1.106
+echo "ONBOOT=yes" >> /etc/sysconfig/network-scripts/ifcfg-ens802f1.106
+echo "IPV6INIT=yes" >> /etc/sysconfig/network-scripts/ifcfg-ens802f1.106
+echo "IPV6ADDR=fec0::6ab4:0:5efe:159.45.14.11" >> /etc/sysconfig/network-scripts/ifcfg-ens802f1.106
+echo "IPV6_DEFAULTGW=fe80::5efe:131.107.25.100" >> /etc/sysconfig/network-scripts/ifcfg-ens802f1.106
+echo "VLAN=yes" >> /etc/sysconfig/network-scripts/ifcfg-ens802f1.106
+
+echo "Configuring vlan 108 on ens802f1"
+sed -i '/^BOOTPROTO=/d' /etc/sysconfig/network-scripts/ifcfg-ens802f1.108
+sed -i '/^ONBOOT=/d' /etc/sysconfig/network-scripts/ifcfg-ens802f1.108
+echo "DEVICE=ens802f1.108" >> /etc/sysconfig/network-scripts/ifcfg-ens802f1.108
+echo "BOOTPROTO=none" >> /etc/sysconfig/network-scripts/ifcfg-ens802f1.108
+echo "ONBOOT=yes" >> /etc/sysconfig/network-scripts/ifcfg-ens802f1.108
+echo "IPV6INIT=yes" >> /etc/sysconfig/network-scripts/ifcfg-ens802f1.108
+echo "IPV6ADDR=fec0::6ab4:0:5efe:159.45.14.11" >> /etc/sysconfig/network-scripts/ifcfg-ens802f1.108
+echo "IPV6_DEFAULTGW=fe80::5efe:131.107.25.100" >> /etc/sysconfig/network-scripts/ifcfg-ens802f1.108
+echo "VLAN=yes" >> /etc/sysconfig/network-scripts/ifcfg-ens802f1.108
+grep -q -F 'NETWORKING_IPV6=yes' /etc/sysconfig/network || echo "NETWORKING_IPV6=yes" >> /etc/sysconfig/network
+
+# Setup DNS servers
+echo "search example.com" > /etc/resolv.conf
+echo "nameserver 172.12.88.91" >> /etc/resolv.conf
+echo "nameserver 192.168.20.77" >> /etc/resolv.conf
+chattr +i /etc/resolv.conf
+
+# Download the service to callback to RackHD after OS installation/reboot completion
+/usr/bin/wget http://172.31.128.1:9080/api/current/templates/rackhd.callback.sh -O /etc/rc.d/init.d/rackhd.callback.sh
+chmod +x /etc/rc.d/init.d/rackhd.callback.sh
+# Enable the above service, it should auto-disable after running once
+chkconfig rackhd.callback.sh on
+
+#signify ORA the installation completed
+/usr/bin/wget --spider http://172.31.128.1:9080/api/current/templates/renasar-ansible.pub
+
+) 2>&1 >>/root/install-post-sh.log
+EOF
+%end

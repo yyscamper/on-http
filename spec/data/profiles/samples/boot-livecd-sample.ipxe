@@ -1,0 +1,4 @@
+kernel http://172.31.128.1:9080/ubuntu-livecd/vmlinuz0
+initrd http://172.31.128.1:9080/ubuntu-livecd/initrd.img
+imgargs vmlinuz0 rootflags=loop initrd=initrd.img root=live:/ubuntu-livecd-trusty.iso rootfstype=iso9660 !text !lang !ksdevice
+boot || prompt --key 0x197e --timeout 2000 Press F12 to investigate || exit shell

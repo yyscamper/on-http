@@ -89,3 +89,13 @@ helper.request = function (url, options) {
 
     return agent;
 };
+
+helper.startTemplateTest = function (subject) {
+    var TemplateUnitTestHelper = require('./template-ut-helper.js');
+    var templateHelper = new TemplateUnitTestHelper();
+    templateHelper.setWorkingDir(process.cwd());
+    if (subject) {
+        templateHelper.setTemplateFile(subject);
+    }
+    return templateHelper;
+};

@@ -9,11 +9,11 @@ keyboard 'us'
 timezone America/Los_Angeles --isUtc
 firewall --enabled --http --ssh
 selinux --permissive
-<% if (version === "6.5") { %>
-  bootloader --location=mbr --driveorder=<%=installDisk%> --append="crashkernel=auth rhgb"
-<% } else { %>
-  bootloader --location=mbr --driveorder=<%=installDisk%> --boot-drive=<%=installDisk%> --append="crashkernel=auth rhgb"
-<% } %>
+<%_ if (version === "6.5") { _%>
+bootloader --location=mbr --driveorder=<%=installDisk%> --append="crashkernel=auth rhgb"
+<%_ } else { _%>
+bootloader --location=mbr --driveorder=<%=installDisk%> --boot-drive=<%=installDisk%> --append="crashkernel=auth rhgb"
+<%_ } _%>
 services --enabled=NetworkManager,sshd
 network --device=<%=macaddress%> --noipv6 --activate
 
@@ -26,43 +26,43 @@ authconfig --enableshadow --passalgo=sha512 --enablefingerprint
 rootpw --iscrypted <%=rootEncryptedPassword%>
 
 #create all users
-<% if (typeof users !== 'undefined') { %>
-<% users.forEach(function(user) { %>
-<%_  if( typeof user.uid !== 'undefined' ) { _%>
-        user --name=<%=user.name%> --uid=<%=user.uid%> --iscrypted --password <%=user.encryptedPassword%>
-<%_  } else { _%>
-        user --name=<%=user.name%>  --iscrypted --password <%=user.encryptedPassword%>
-<%_ }}) _%>
-<% } %>
+<%_ if (typeof users !== 'undefined') { _%>
+    <%_ users.forEach(function(user) { _%>
+        <%_  if( typeof user.uid !== 'undefined' ) { _%>
+user --name=<%=user.name%> --uid=<%=user.uid%> --iscrypted --password <%=user.encryptedPassword%>
+        <%_  } else { _%>
+user --name=<%=user.name%>  --iscrypted --password <%=user.encryptedPassword%>
+    <%_ }}) _%>
+<%_ } _%>
 
 # Disk Partitioning
 zerombr
 clearpart --all --drives=<%=installDisk%>
 
-<% if (typeof installPartitions !== 'undefined' && installPartitions.length > 0) { %>
-    <% installPartitions.forEach(function(partition) { %>
-        # mountPoint and size is required
-        <% if(partition.mountPoint !== undefined && partition.size !== undefined) { %>
-            <% if(partition.fsType !== undefined) { %>
-                <% if(partition.size === 'auto') { %>
-                    partition <%=partition.mountPoint%> --grow --fstype=<%=partition.fsType%>
-                <% } else { %>
-                    partition <%=partition.mountPoint%> --size=<%=partition.size%> --fstype=<%=partition.fsType%>
-                <% } %>
-            <% } else { %>
-                # fsType is optional
-                <% if(partition.size === 'auto') { %>
-                    partition <%=partition.mountPoint%> --grow
-                <% } else { %>
-                    partition <%=partition.mountPoint%> --size=<%=partition.size%>
-                <% } %>
-            <% } %>
-        <% } %>
-    <% }) %>
-<% } else { %>
-    # auto partitioning if no partitions are specified
-    autopart
-<% } %>
+<%_ if (typeof installPartitions !== 'undefined' && installPartitions.length > 0) { _%>
+    <%_ installPartitions.forEach(function(partition) { _%>
+        <%# mountPoint and size is required %>
+        <%_ if(partition.mountPoint !== undefined && partition.size !== undefined) { _%>
+            <%_ if(partition.fsType !== undefined) { _%>
+                <%_ if(partition.size === 'auto') { _%>
+partition <%=partition.mountPoint%> --grow --fstype=<%=partition.fsType%>
+                <%_ } else { _%>
+partition <%=partition.mountPoint%> --size=<%=partition.size%> --fstype=<%=partition.fsType%>
+                <%_ } _%>
+            <%_ } else { _%>
+                <%# fsType is optional -%>
+                <%_ if(partition.size === 'auto') { _%>
+partition <%=partition.mountPoint%> --grow
+                <%_ } else { _%>
+partition <%=partition.mountPoint%> --size=<%=partition.size%>
+                <%_ } _%>
+            <%_ } _%>
+        <%_ } _%>
+    <%_ }) _%>
+<%_ } else { _%>
+# auto partitioning if no partitions are specified
+autopart
+<%_ } _%>
 
 # END of Disk Partitioning
 
@@ -82,20 +82,20 @@ sudo
 perl
 libselinux-python
 net-tools
-<% if( typeof kvm !== 'undefined' && kvm ) { %>
-    <% if (version === "6.5") { %>
-        kvm
-        virt-manager
-        libvirt
-        libvirt-python
-        python-virtinst
-    <% } else { %>
-        @virtualization-hypervisor
-        @virtualization-client
-        @virtualization-platform
-        @virtualization-tools
-    <% } %>
-<% } %>
+<%_ if( typeof kvm !== 'undefined' && kvm ) { _%>
+    <%_ if (version === "6.5") { _%>
+kvm
+virt-manager
+libvirt
+libvirt-python
+python-virtinst
+    <%_ } else { _%>
+@virtualization-hypervisor
+@virtualization-client
+@virtualization-platform
+@virtualization-tools
+    <%_ } _%>
+<%_ } _%>
 %end
 
 %pre
@@ -108,28 +108,28 @@ PATH=/bin:/sbin:/usr/bin:/usr/sbin
 export PATH
 
 # copying of SSH key
-<% if (typeof rootSshKey !== 'undefined') { %>
-    mkdir /root/.ssh
-    echo <%=rootSshKey%> > /root/.ssh/authorized_keys
-    chown -R root:root /root/.ssh
-<% } %>
-<% if (typeof users !== 'undefined') { %>
-<% users.forEach(function(user) { %>
-    <% if (typeof user.sshKey !== 'undefined') { %>
-        mkdir /home/<%=user.name%>/.ssh
-        echo <%=user.sshKey%> > /home/<%=user.name%>/.ssh/authorized_keys
-        chown -R <%=user.name%>:<%=user.name%> /home/<%=user.name%>/.ssh
-    <% } %>
-<% }) %>
-<% } %>
+<%_ if (typeof rootSshKey !== 'undefined') { _%>
+mkdir /root/.ssh
+echo <%=rootSshKey%> > /root/.ssh/authorized_keys
+chown -R root:root /root/.ssh
+<%_ } _%>
+<%_ if (typeof users !== 'undefined') { _%>
+<%_ users.forEach(function(user) { _%>
+    <%_ if (typeof user.sshKey !== 'undefined') { _%>
+mkdir /home/<%=user.name%>/.ssh
+echo <%=user.sshKey%> > /home/<%=user.name%>/.ssh/authorized_keys
+chown -R <%=user.name%>:<%=user.name%> /home/<%=user.name%>/.ssh
+    <%_ } _%>
+<%_ }) _%>
+<%_ } _%>
 
 #set hostname
-<% if (typeof hostname !== 'undefined') { %>
-    echo <%=hostname%> > /etc/hostname
-    <% if (typeof domain !== 'undefined') { %>
-        echo -e "NETWORKING=yes\nHOSTNAME=<%=hostname%>.<%=domain%>" > /etc/sysconfig/network
-    <% } %>
-<% } %>
+<%_ if (typeof hostname !== 'undefined') { _%>
+echo <%=hostname%> > /etc/hostname
+    <%_ if (typeof domain !== 'undefined') { _%>
+echo -e "NETWORKING=yes\nHOSTNAME=<%=hostname%>.<%=domain%>" > /etc/sysconfig/network
+    <%_ } _%>
+<%_ } _%>
 
 # Setup static network configuration
 <% if (typeof networkDevices !== 'undefined') { %>

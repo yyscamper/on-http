@@ -1,0 +1,171 @@
+#!/bin/bash
+
+## Set network interfaces
+# Remove old network config
+rm /etc/systemd/network/*
+
+# Create new network config file for eth0
+cat > /etc/systemd/network/eth0-static.network << "EOF"
+[Match]
+Name=eth0
+
+[Network]
+EOF
+
+chmod 644 /etc/systemd/network/eth0-static.network
+
+echo "Address=192.168.1.29/24" >> /etc/systemd/network/eth0-static.network
+echo "Gateway=192.168.1.1" >> /etc/systemd/network/eth0-static.network
+echo "VLAN=eth0.104" >> /etc/systemd/network/eth0-static.network
+
+# Create vlan config file for eth0.104
+cat >  /etc/systemd/network/eth0.104.netdev << "EOF"
+[NetDev]
+Name=eth0.104
+Kind=vlan
+
+[VLAN]
+Id=104
+EOF
+
+chmod 644 /etc/systemd/network/eth0.104.netdev
+
+echo "VLAN=eth0.105" >> /etc/systemd/network/eth0-static.network
+
+# Create vlan config file for eth0.105
+cat >  /etc/systemd/network/eth0.105.netdev << "EOF"
+[NetDev]
+Name=eth0.105
+Kind=vlan
+
+[VLAN]
+Id=105
+EOF
+
+chmod 644 /etc/systemd/network/eth0.105.netdev
+
+echo "Address=fec0::6ab4:0:5efe:157.60.14.21/64" >> /etc/systemd/network/eth0-static.network
+echo "Gateway=fe80::5efe:131.107.25.1" >> /etc/systemd/network/eth0-static.network
+echo "VLAN=eth0.101" >> /etc/systemd/network/eth0-static.network
+
+# Create vlan config file for eth0.101
+cat >  /etc/systemd/network/eth0.101.netdev << "EOF"
+[NetDev]
+Name=eth0.101
+Kind=vlan
+
+[VLAN]
+Id=101
+EOF
+
+chmod 644 /etc/systemd/network/eth0.101.netdev
+
+echo "VLAN=eth0.106" >> /etc/systemd/network/eth0-static.network
+
+# Create vlan config file for eth0.106
+cat >  /etc/systemd/network/eth0.106.netdev << "EOF"
+[NetDev]
+Name=eth0.106
+Kind=vlan
+
+[VLAN]
+Id=106
+EOF
+
+chmod 644 /etc/systemd/network/eth0.106.netdev
+
+
+# Create new network config file for eth1
+cat > /etc/systemd/network/eth1-static.network << "EOF"
+[Match]
+Name=eth1
+
+[Network]
+EOF
+
+chmod 644 /etc/systemd/network/eth1-static.network
+
+echo "Address=192.168.11.89/24" >> /etc/systemd/network/eth1-static.network
+echo "Gateway=192.168.11.1" >> /etc/systemd/network/eth1-static.network
+echo "VLAN=eth1.110" >> /etc/systemd/network/eth1-static.network
+
+# Create vlan config file for eth1.110
+cat >  /etc/systemd/network/eth1.110.netdev << "EOF"
+[NetDev]
+Name=eth1.110
+Kind=vlan
+
+[VLAN]
+Id=110
+EOF
+
+chmod 644 /etc/systemd/network/eth1.110.netdev
+
+echo "Address=fec0::6ab4:0:5efe:159.45.14.11/64" >> /etc/systemd/network/eth1-static.network
+echo "Gateway=fe80::5efe:131.107.25.100" >> /etc/systemd/network/eth1-static.network
+
+# Create new network config file for eth2
+cat > /etc/systemd/network/eth2-static.network << "EOF"
+[Match]
+Name=eth2
+
+[Network]
+EOF
+
+chmod 644 /etc/systemd/network/eth2-static.network
+
+echo "Address=192.168.22.34/24" >> /etc/systemd/network/eth2-static.network
+echo "Gateway=192.168.22.1" >> /etc/systemd/network/eth2-static.network
+echo "Address=fec0::6ab4:0:5efe:159.45.22.11/64" >> /etc/systemd/network/eth2-static.network
+echo "Gateway=fe80::5efe:131.107.10.100" >> /etc/systemd/network/eth2-static.network
+
+# Create new network config file for eth3
+cat > /etc/systemd/network/eth3-static.network << "EOF"
+[Match]
+Name=eth3
+
+[Network]
+EOF
+
+chmod 644 /etc/systemd/network/eth3-static.network
+
+echo "Address=192.168.33.56/24" >> /etc/systemd/network/eth3-static.network
+echo "Gateway=192.168.33.1" >> /etc/systemd/network/eth3-static.network
+
+# Create new network config file for eth4
+cat > /etc/systemd/network/eth4-static.network << "EOF"
+[Match]
+Name=eth4
+
+[Network]
+EOF
+
+chmod 644 /etc/systemd/network/eth4-static.network
+
+echo "Address=fec0::6ab4:0:5efe:159.45.56.78/64" >> /etc/systemd/network/eth4-static.network
+echo "Gateway=fe80::5efe:131.107.32.100" >> /etc/systemd/network/eth4-static.network
+
+# Restart network service
+systemctl restart systemd-networkd.service
+
+# Config DNS server
+echo "DNS=172.12.88.91" >> /etc/systemd/resolved.conf
+echo "DNS=192.168.20.77" >> /etc/systemd/resolved.conf
+systemctl restart systemd-resolved
+
+# Enable sshd
+sed -i 's/PermitRootLogin no/PermitRootLogin yes/g' /etc/ssh/sshd_config
+systemctl restart sshd
+
+# Set domain name
+# search domain in DNS cannot be set. Issue opened https://github.com/vmware/photon/issues/488
+line=`wc -l < /etc/hosts`
+sed -i "${line}i 127.0.0.1\trackhd-node.example.com\trackhd-node" /etc/hosts
+
+# Set user info
+useradd -m 'rackhd1' -p '' -u 1010
+mkdir /home/rackhd1/.ssh
+echo ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDJQ631/sw3D40h/6JfA+PFVy5Ofz6eu7caxbv0zdw4fTJsrFcOliHZTEtAvqx7Oa8gqSC6d7v61M0croQxtt1DGUcH2G4yhfdZOlK4pr5McwtX0T/APACdAr1HtP7Bt7u43mgHpUG4bHGc+NoY7cWCISkxl4apkYWbvcoJy/5bQn0uRgLuHUNXxK/XuLT5vG76xxY+1xRa5+OIoJ6l78nglNGrj2V+jH3+9yZxI43S9I3NOCl4BvX5Cp3CFMHyt80gk2yM1BJpQZZ4GHewkI/XOIFPU3rR5+toEYXHz7kzykZsqt1PtbaTwG3TX9GJI4C7aWyH9H+9Bt76vH/pLBIn rackhd@rackhd-demo > /home/rackhd1/.ssh/authorized_keys
+
+useradd -m 'rackhd2' -p ''
+

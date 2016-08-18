@@ -1,0 +1,7 @@
+echo Starting CentOS/RHEL 7.0 installer for ${hostidentifier}
+set base-url http://172.31.128.1:9080/centos/7.0/os/x86_64/images/pxeboot
+set params initrd=initrd.img ks=http://172.31.128.1:9080/api/current/templates/centos-ks hostname=rackhd-test ksdevice=bootif BOOTIF=01-${netX/mac} console=com1,115200n8 console=tty0
+kernel ${base-url}/vmlinuz repo=http://172.31.128.1:9080/centos/7.0/os/x86_64 ${params}
+initrd ${base-url}/initrd.img
+boot || prompt --key 0x197e --timeout 2000 Press F12 to investigate || exit shell
+
