@@ -45,7 +45,6 @@ describe(templateName, function() {
             'aa:bb:cc:dd:ee:ff'
         ],
         name: 'Node for testing',
-        relations: [],
         obms: [
             {
                 service: 'ipmi-obm-service',
