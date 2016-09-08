@@ -89,3 +89,35 @@ helper.request = function (url, options) {
 
     return agent;
 };
+
+helper.startTemplateTest = function (subject) {
+    var TemplateUnitTestHelper = require('./template-ut-helper.js');
+    var templateHelper = new TemplateUnitTestHelper();
+    templateHelper.setWorkingDir(process.cwd());
+    if (subject) {
+        templateHelper.setTemplateFile(subject);
+    }
+    var baseUrl = 'http://127.31.128.1:9080/api/current';
+    templateHelper.setCommonContext({
+        server: '172.31.128.1',
+        port: 9080,
+        ipaddress: '172.31.128.8',
+        netmask: '255.255.255.0',
+        gateway: '10.1.1.1',
+        macaddress: '11:22:33:44:55:66',
+        sku: {},
+        env: {},
+        api: {
+            server: 'http://172.31.128.1:9080',
+            base: baseUrl,
+            templates: baseUrl + '/templates',
+            profiles: baseUrl + '/profiles',
+            lookups: baseUrl + '/lookups',
+            files: baseUrl + '/files',
+            nodes: baseUrl + '/nodes'
+        },
+        context: {},
+        nodeId: 'testNode'
+    });
+    return templateHelper;
+};

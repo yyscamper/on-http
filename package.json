@@ -73,6 +73,7 @@
     "istanbul": "^0.3.5",
     "jsdoc": "^3.3.0-alpha13",
     "jshint": "^2.5.11",
+    "jsonlint": "^1.6.2",
     "mocha": "^2.1.0",
     "nock": "~3.5.0",
     "rewire": "^2.5.1",
